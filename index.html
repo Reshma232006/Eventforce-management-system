@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f5f0">
+  <title>Eventforce | Operations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f5f5f0;
+      --surface: #fff;
+      --ink: #20241f;
+      --muted: #777c73;
+      --line: #e7e8e1;
+      --green: #33483b;
+      --green-soft: #e8eee8;
+      --lime: #d9f078;
+      --orange: #f27853;
+      --orange-soft: #fff0e9;
+      --blue: #dceafa;
+      --shadow: 0 12px 36px rgba(35, 42, 34, .07);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; min-height: 100vh; }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 238px minmax(0, 1fr); }
+    .sidebar { display: flex; flex-direction: column; padding: 25px 16px 20px; background: var(--green); color: #f7f8f2; min-height: 100vh; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 10px 35px; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; color: var(--green); background: var(--lime); border-radius: 10px; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; }
+    .brand-name { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: 0; }
+    .brand-name span { color: var(--lime); }
+    .side-label { padding: 0 11px; color: #aab6a9; font: 10px 'DM Mono', monospace; letter-spacing: 1.1px; text-transform: uppercase; }
+    .nav { display: grid; gap: 5px; margin-top: 11px; }
+    .nav button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 42px; padding: 0 11px; border: 0; border-radius: 7px; background: transparent; color: #d5ded4; cursor: pointer; text-align: left; font-size: 13px; transition: background .18s, color .18s; }
+    .nav button:hover { background: rgba(255,255,255,.08); }
+    .nav button.active { color: var(--ink); background: var(--lime); font-weight: 700; }
+    .nav-icon { width: 18px; text-align: center; font: 15px 'DM Mono', monospace; }
+    .nav-count { margin-left: auto; color: inherit; font: 10px 'DM Mono', monospace; opacity: .8; }
+    .sidebar-spacer { flex: 1; }
+    .coverage-card { padding: 15px 14px; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; background: rgba(255,255,255,.055); }
+    .coverage-top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+    .coverage-top strong { font: 12px 'DM Mono', monospace; color: var(--lime); }
+    .coverage-card p { margin: 8px 0 12px; color: #c2cec1; font-size: 11px; line-height: 1.5; }
+    .progress { height: 5px; overflow: hidden; border-radius: 9px; background: rgba(255,255,255,.18); }
+    .progress span { display: block; height: 100%; width: 82%; border-radius: inherit; background: var(--lime); }
+    .profile { display: flex; align-items: center; gap: 10px; margin-top: 20px; padding: 13px 7px 0; border-top: 1px solid rgba(255,255,255,.15); }
+    .avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; border-radius: 50%; background: #f3c8a9; color: #56392e; font-weight: 700; font-size: 11px; }
+    .profile strong { display: block; font-size: 11px; }
+    .profile small { display: block; margin-top: 3px; color: #bdc9bc; font-size: 10px; }
+    main { min-width: 0; padding: 0 38px 42px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; height: 69px; border-bottom: 1px solid var(--line); }
+    .crumb { color: var(--muted); font-size: 12px; }
+    .crumb b { color: var(--ink); font-weight: 600; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .today-chip { display: flex; align-items: center; gap: 8px; color: #596057; font: 11px 'DM Mono', monospace; }
+    .today-chip .dot { width: 7px; height: 7px; border-radius: 50%; background: #77a978; box-shadow: 0 0 0 3px #e1eee0; }
+    .icon-button { position: relative; display: grid; place-items: center; width: 35px; height: 35px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); cursor: pointer; font-size: 16px; }
+    .icon-button:hover { background: #f0f1eb; }
+    .page { max-width: 1300px; margin: 0 auto; animation: rise .42s ease both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .page-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; padding: 30px 0 23px; }
+    .eyebrow { margin-bottom: 8px; color: var(--muted); font: 10px 'DM Mono', monospace; letter-spacing: 1px; text-transform: uppercase; }
+    h1 { margin: 0; font: 600 31px 'Space Grotesk', sans-serif; letter-spacing: 0; }
+    .heading-note { margin-top: 6px; color: var(--muted); font-size: 12px; }
+    .primary-button { display: inline-flex; justify-content: center; align-items: center; gap: 9px; min-height: 40px; padding: 0 15px; border: 0; border-radius: 6px; background: var(--green); color: white; cursor: pointer; font-size: 12px; font-weight: 700; transition: transform .15s, background .15s; }
+    .primary-button:hover { background: #263a2e; transform: translateY(-1px); }
+    .primary-button .plus { color: var(--lime); font-size: 18px; line-height: 0; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .stat { min-height: 104px; padding: 16px 17px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+    .stat-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+    .stat-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; background: var(--green-soft); color: var(--green); font: 12px 'DM Mono', monospace; }
+    .stat:nth-child(2) .stat-icon { background: var(--blue); color: #375a7a; }
+    .stat:nth-child(3) .stat-icon { background: var(--orange-soft); color: #a94f36; }
+    .stat:nth-child(4) .stat-icon { background: #f2f0dd; color: #77713e; }
+    .stat-value { margin-top: 9px; font: 600 25px 'Space Grotesk', sans-serif; }
+    .stat-foot { margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .stat-foot .positive { color: #4a8051; font-weight: 700; }
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(270px, .85fr); gap: 15px; margin-top: 18px; align-items: start; }
+    .panel { min-width: 0; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 18px 14px; }
+    .panel-title { margin: 0; font: 600 15px 'Space Grotesk', sans-serif; }
+    .panel-subtitle { margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .view-all { border: 0; padding: 5px 0 5px 8px; background: transparent; color: var(--green); cursor: pointer; font-size: 11px; font-weight: 700; }
+    .view-all:hover { text-decoration: underline; }
+    .filters { display: flex; align-items: center; gap: 3px; padding: 0 18px 12px; border-bottom: 1px solid var(--line); }
+    .filter { padding: 7px 10px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); cursor: pointer; font-size: 10px; }
+    .filter.active { background: var(--green-soft); color: var(--green); font-weight: 700; }
+    .search { position: relative; margin-left: auto; }
+    .search input { width: 160px; height: 30px; padding: 0 9px 0 27px; border: 1px solid var(--line); border-radius: 5px; outline: 0; background: #fbfbf8; font-size: 10px; }
+    .search input:focus { border-color: #829786; }
+    .search:before { content: '⌕'; position: absolute; top: 4px; left: 9px; color: var(--muted); font-size: 17px; }
+    .event-list { padding: 0 18px; }
+    .event-row { display: grid; grid-template-columns: 46px minmax(130px, 1.6fr) minmax(90px, .85fr) minmax(72px, .7fr) auto; gap: 12px; align-items: center; min-height: 76px; border-bottom: 1px solid #eff0eb; animation: rise .3s ease both; }
+    .event-row:last-child { border-bottom: 0; }
+    .event-thumb { position: relative; width: 42px; height: 42px; overflow: hidden; border-radius: 5px; background: #dfe6dc; }
+    .event-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .event-main { min-width: 0; }
+    .event-name { overflow: hidden; color: var(--ink); font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .event-meta { overflow: hidden; margin-top: 5px; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+    .row-label { display: block; margin-bottom: 5px; color: #969a92; font: 9px 'DM Mono', monospace; text-transform: uppercase; }
+    .row-value { color: #4a5048; font-size: 10px; white-space: nowrap; }
+    .staff-value { display: flex; align-items: center; gap: 5px; }
+    .staff-bar { width: 40px; height: 4px; overflow: hidden; border-radius: 5px; background: #e8eae5; }
+    .staff-bar span { display: block; height: 100%; border-radius: inherit; background: #78a47b; }
+    .staff-bar.low span { background: var(--orange); }
+    .status { display: inline-flex; align-items: center; gap: 5px; width: fit-content; padding: 5px 7px; border-radius: 4px; background: var(--green-soft); color: #48654d; font-size: 9px; white-space: nowrap; }
+    .status:before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #7da77f; }
+    .status.planning { background: #f2f0dd; color: #756f3b; }
+    .status.planning:before { background: #b0a64e; }
+    .status.attention { background: var(--orange-soft); color: #a6533b; }
+    .status.attention:before { background: var(--orange); }
+    .deploy { min-width: 58px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; background: white; color: #4e554c; cursor: pointer; font-size: 9px; }
+    .deploy:hover { border-color: #8ca18e; background: #f4f7f2; }
+    .empty-state { display: none; padding: 35px 12px; color: var(--muted); text-align: center; font-size: 12px; }
+    .right-stack { display: grid; gap: 14px; }
+    .map-card { overflow: hidden; }
+    .map-visual { position: relative; height: 137px; overflow: hidden; background: #dce3d8; }
+    .map-visual img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.72); }
+    .map-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,36,28,.05), rgba(20,36,28,.56)); }
+    .map-caption { position: absolute; right: 14px; bottom: 12px; left: 14px; display: flex; align-items: flex-end; justify-content: space-between; color: white; }
+    .map-caption small { display: block; margin-bottom: 3px; color: #e4eee1; font: 9px 'DM Mono', monospace; text-transform: uppercase; }
+    .map-caption strong { font: 600 14px 'Space Grotesk', sans-serif; }
+    .map-pill { padding: 6px 8px; border-radius: 4px; background: var(--lime); color: var(--ink); font: 9px 'DM Mono', monospace; }
+    .venue-list { padding: 4px 15px 11px; }
+    .venue-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #eff0eb; }
+    .venue-row:last-child { border-bottom: 0; }
+    .venue-name { font-size: 10px; font-weight: 700; }
+    .venue-location { margin-top: 3px; color: var(--muted); font-size: 9px; }
+    .venue-count { display: flex; align-items: center; gap: 5px; color: #495148; font: 10px 'DM Mono', monospace; }
+    .venue-count:before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #78a47b; }
+    .activity-list { padding: 0 16px 8px; }
+    .activity-item { position: relative; display: grid; grid-template-columns: 24px 1fr; gap: 9px; padding: 8px 0 11px; }
+    .activity-item:not(:last-child):after { content: ''; position: absolute; top: 30px; bottom: -1px; left: 11px; width: 1px; background: var(--line); }
+    .activity-icon { z-index: 1; display: grid; place-items: center; width: 23px; height: 23px; border: 1px solid var(--line); border-radius: 50%; background: white; color: var(--green); font: 9px 'DM Mono', monospace; }
+    .activity-copy { padding-top: 2px; color: #52584f; font-size: 9px; line-height: 1.5; }
+    .activity-copy strong { color: var(--ink); }
+    .activity-time { display: block; margin-top: 3px; color: #999e95; font: 9px 'DM Mono', monospace; }
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 10; padding: 12px 16px; border-radius: 6px; background: var(--green); color: white; box-shadow: var(--shadow); font-size: 12px; opacity: 0; transform: translateY(10px); pointer-events: none; transition: opacity .2s, transform .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    dialog { width: min(440px, calc(100% - 30px)); padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); box-shadow: 0 25px 90px rgba(19,29,22,.25); }
+    dialog::backdrop { background: rgba(25,36,29,.45); backdrop-filter: blur(2px); }
+    .modal-head { display: flex; justify-content: space-between; align-items: start; padding: 20px 21px 16px; border-bottom: 1px solid var(--line); }
+    .modal-head h2 { margin: 0; font: 600 18px 'Space Grotesk', sans-serif; }
+    .modal-head p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+    .close-modal { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 20px; }
+    .form { display: grid; gap: 13px; padding: 18px 21px 21px; }
+    .form label { display: grid; gap: 6px; color: #5e655c; font-size: 10px; font-weight: 700; }
+    .form input, .form select { width: 100%; height: 37px; padding: 0 10px; border: 1px solid var(--line); border-radius: 5px; outline: 0; background: #fff; color: var(--ink); font-size: 11px; }
+    .form input:focus, .form select:focus { border-color: #829786; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+    .secondary-button { min-height: 38px; padding: 0 13px; border: 1px solid var(--line); border-radius: 5px; background: white; cursor: pointer; font-size: 11px; }
+    .mobile-menu { display: none; }
+    @media (max-width: 1120px) {
+      main { padding-right: 24px; padding-left: 24px; }
+      .content-grid { grid-template-columns: minmax(0, 1.45fr) minmax(245px, .8fr); gap: 12px; }
+      .event-row { grid-template-columns: 42px minmax(110px, 1.4fr) minmax(75px, .75fr) auto; gap: 9px; }
+      .event-row .crew-col { display: none; }
+    }
+    @media (max-width: 800px) {
+      .app { grid-template-columns: 66px minmax(0, 1fr); }
+      .sidebar { align-items: center; padding: 18px 8px; }
+      .brand { padding: 0 0 28px; }
+      .brand-name, .side-label, .nav-label, .nav-count, .coverage-card, .profile > div:last-child { display: none; }
+      .nav { width: 100%; }
+      .nav button { justify-content: center; padding: 0; }
+      .nav-icon { font-size: 17px; }
+      .profile { justify-content: center; width: 100%; padding: 14px 0 0; }
+      main { padding: 0 18px 30px; }
+      .content-grid { grid-template-columns: 1fr; }
+      .right-stack { grid-template-columns: 1fr 1fr; align-items: start; }
+      .activity-panel { grid-column: 1 / -1; }
+    }
+    @media (max-width: 560px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: sticky; z-index: 5; top: 0; flex-direction: row; justify-content: space-between; min-height: auto; height: 55px; padding: 0 13px; box-shadow: 0 2px 8px rgba(20,30,22,.1); }
+      .brand { padding: 0; }
+      .brand-name { display: block; font-size: 16px; }
+      .brand-mark { width: 30px; height: 30px; }
+      .sidebar .side-label, .sidebar-spacer, .coverage-card, .profile { display: none; }
+      .nav { display: flex; width: auto; gap: 4px; margin: 0; }
+      .nav button { width: 35px; min-height: 35px; }
+      .nav button:nth-child(n+4) { display: none; }
+      .nav-label, .nav-count { display: none; }
+      main { padding: 0 13px 25px; }
+      .topbar { height: 53px; }
+      .today-chip { font-size: 9px; }
+      .page-heading { align-items: flex-start; padding: 23px 0 17px; }
+      h1 { font-size: 25px; }
+      .heading-note { max-width: 230px; line-height: 1.45; }
+      .primary-button { min-height: 36px; padding: 0 10px; font-size: 10px; white-space: nowrap; }
+      .stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .stat { min-height: 92px; padding: 12px; }
+      .stat-value { font-size: 22px; }
+      .stat-top { font-size: 10px; }
+      .content-grid { margin-top: 12px; }
+      .panel-head { padding: 14px 12px 12px; }
+      .filters { flex-wrap: wrap; padding: 0 10px 10px; }
+      .filter { padding: 7px; }
+      .search { flex: 1 1 100%; margin: 3px 0 0; }
+      .search input { width: 100%; }
+      .event-list { padding: 0 10px; }
+      .event-row { grid-template-columns: 36px minmax(0, 1fr) auto; gap: 8px; min-height: 70px; }
+      .event-thumb { width: 34px; height: 34px; }
+      .event-row .date-col, .event-row .crew-col { display: none; }
+      .event-name { font-size: 10px; }
+      .event-meta { font-size: 9px; }
+      .status { padding: 5px; font-size: 8px; }
+      .deploy { display: none; }
+      .right-stack { grid-template-columns: 1fr; }
+      .activity-panel { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">E</div><div class="brand-name">event<span>force</span></div></div>
+      <div class="side-label">Workspace</div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="active" data-page="Overview"><span class="nav-icon">◫</span><span class="nav-label">Overview</span></button>
+        <button data-page="Events"><span class="nav-icon">▦</span><span class="nav-label">Events</span><span class="nav-count">08</span></button>
+        <button data-page="Staff"><span class="nav-icon">♧</span><span class="nav-label">Staff</span></button>
+        <button data-page="Venues"><span class="nav-icon">⌖</span><span class="nav-label">Venues</span></button>
+        <button data-page="Reports"><span class="nav-icon">▤</span><span class="nav-label">Reports</span></button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <section class="coverage-card" aria-label="Weekly staffing coverage">
+        <div class="coverage-top"><span>Weekly coverage</span><strong>82%</strong></div>
+        <p>1,284 of 1,560 planned shift hours are covered.</p>
+        <div class="progress"><span></span></div>
+      </section>
+      <div class="profile"><div class="avatar">JD</div><div><strong>Jordan Davis</strong><small>Operations lead</small></div></div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div class="crumb">Operations <span aria-hidden="true">/</span> <b id="crumb-page">Overview</b></div>
+        <div class="top-actions"><div class="today-chip"><span class="dot"></span><span id="today-date">MON, 14 OCT 2024</span></div><button class="icon-button" type="button" aria-label="Notifications" title="Notifications" id="notifications">♧</button></div>
+      </header>
+      <div class="page">
+        <section class="page-heading">
+          <div><div class="eyebrow">Monday / Week 42</div><h1>Operations overview</h1><div class="heading-note">Your event teams, ready when the doors open.</div></div>
+          <button class="primary-button" id="open-modal"><span class="plus">+</span> Create event</button>
+        </section>
+        <section class="stats" aria-label="Operations summary">
+          <article class="stat"><div class="stat-top"><span>Active events</span><span class="stat-icon">EV</span></div><div class="stat-value" id="stat-events">08</div><div class="stat-foot"><span class="positive">+2</span> from last week</div></article>
+          <article class="stat"><div class="stat-top"><span>Staff on shift</span><span class="stat-icon">ST</span></div><div class="stat-value">246</div><div class="stat-foot"><span class="positive">91%</span> check-in rate</div></article>
+          <article class="stat"><div class="stat-top"><span>Needs attention</span><span class="stat-icon">!</span></div><div class="stat-value" id="stat-attention">02</div><div class="stat-foot">Open staffing gaps</div></article>
+          <article class="stat"><div class="stat-top"><span>Venues live</span><span class="stat-icon">VN</span></div><div class="stat-value">06</div><div class="stat-foot">Across 3 city zones</div></article>
+        </section>
+        <div class="content-grid">
+          <section class="panel">
+            <div class="panel-head"><div><h2 class="panel-title">Event roster</h2><div class="panel-subtitle">Live operations and upcoming deployments</div></div><button class="view-all" id="view-all">View all <span aria-hidden="true">→</span></button></div>
+            <div class="filters" role="group" aria-label="Filter events">
+              <button class="filter active" data-filter="all">All events</button>
+              <button class="filter" data-filter="attention">Needs attention <span id="filter-count">02</span></button>
+              <button class="filter" data-filter="upcoming">Upcoming</button>
+              <label class="search"><input id="search" type="search" placeholder="Search events" aria-label="Search events"></label>
+            </div>
+            <div class="event-list" id="event-list">
+              <article class="event-row" data-status="attention" data-search="city lights festival riverfront seattle festival">
+                <div class="event-thumb"><img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=120&q=80" alt="Festival stage lights"></div>
+                <div class="event-main"><div class="event-name">City Lights Festival</div><div class="event-meta">Riverfront Park · Seattle</div></div>
+                <div class="date-col"><span class="row-label">Schedule</span><span class="row-value">Oct 14 · 4:00 PM</span></div>
+                <div class="crew-col"><span class="row-label">Crew</span><span class="row-value staff-value"><span>34 / 40</span><span class="staff-bar low"><span style="width:85%"></span></span></span></div>
+                <span class="status attention">Short 6</span>
+                <button class="deploy" type="button">Deploy</button>
+              </article>
+              <article class="event-row" data-status="active" data-search="northstar tech summit convention center portland conference">
+                <div class="event-thumb"><img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=120&q=80" alt="Conference audience"></div>
+                <div class="event-main"><div class="event-name">Northstar Tech Summit</div><div class="event-meta">Convention Center · Portland</div></div>
+                <div class="date-col"><span class="row-label">Schedule</span><span class="row-value">Oct 14 · 6:30 PM</span></div>
+                <div class="crew-col"><span class="row-label">Crew</span><span class="row-value staff-value"><span>52 / 52</span><span class="staff-bar"><span style="width:100%"></span></span></span></div>
+                <span class="status">Ready</span>
+                <button class="deploy" type="button">Deploy</button>
+              </article>
+              <article class="event-row" data-status="upcoming" data-search="harbor food week pier 9 san francisco food">
+                <div class="event-thumb"><img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=120&q=80" alt="Food event spread"></div>
+                <div class="event-main"><div class="event-name">Harbor Food Week</div><div class="event-meta">Pier 9 · San Francisco</div></div>
+                <div class="date-col"><span class="row-label">Schedule</span><span class="row-value">Oct 15 · 11:00 AM</span></div>
+                <div class="crew-col"><span class="row-label">Crew</span><span class="row-value staff-value"><span>28 / 32</span><span class="staff-bar"><span style="width:88%"></span></span></span></div>
+                <span class="status planning">Planning</span>
+                <button class="deploy" type="button">Deploy</button>
+              </article>
+              <article class="event-row" data-status="active" data-search="makers market downtown plaza denver market">
+                <div class="event-thumb"><img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=120&q=80" alt="Outdoor event gathering"></div>
+                <div class="event-main"><div class="event-name">Makers Market</div><div class="event-meta">Downtown Plaza · Denver</div></div>
+                <div class="date-col"><span class="row-label">Schedule</span><span class="row-value">Oct 16 · 9:00 AM</span></div>
+                <div class="crew-col"><span class="row-label">Crew</span><span class="row-value staff-value"><span>18 / 18</span><span class="staff-bar"><span style="width:100%"></span></span></span></div>
+                <span class="status">Ready</span>
+                <button class="deploy" type="button">Deploy</button>
+              </article>
+              <article class="event-row" data-status="upcoming" data-search="open water classic marina bay san diego sports">
+                <div class="event-thumb"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=120&q=80" alt="Coastal outdoor venue"></div>
+                <div class="event-main"><div class="event-name">Open Water Classic</div><div class="event-meta">Marina Bay · San Diego</div></div>
+                <div class="date-col"><span class="row-label">Schedule</span><span class="row-value">Oct 18 · 7:00 AM</span></div>
+                <div class="crew-col"><span class="row-label">Crew</span><span class="row-value staff-value"><span>46 / 50</span><span class="staff-bar"><span style="width:92%"></span></span></span></div>
+                <span class="status planning">Planning</span>
+                <button class="deploy" type="button">Deploy</button>
+              </article>
+            </div>
+            <div class="empty-state" id="empty-state">No events match your search.</div>
+          </section>
+          <div class="right-stack">
+            <section class="panel map-card">
+              <div class="panel-head"><div><h2 class="panel-title">Live venues</h2><div class="panel-subtitle">Teams currently deployed</div></div><button class="view-all" data-nav="Venues" aria-label="Open venues">↗</button></div>
+              <div class="map-visual"><img src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=720&q=80" alt="City skyline at dusk"><div class="map-overlay"></div><div class="map-caption"><div><small>Active zone</small><strong>Pacific Northwest</strong></div><span class="map-pill">06 LIVE</span></div></div>
+              <div class="venue-list">
+                <div class="venue-row"><div><div class="venue-name">Riverfront Park</div><div class="venue-location">Seattle, WA · Zone 01</div></div><span class="venue-count">34 staff</span></div>
+                <div class="venue-row"><div><div class="venue-name">Convention Center</div><div class="venue-location">Portland, OR · Zone 02</div></div><span class="venue-count">52 staff</span></div>
+                <div class="venue-row"><div><div class="venue-name">Downtown Plaza</div><div class="venue-location">Denver, CO · Zone 03</div></div><span class="venue-count">18 staff</span></div>
+              </div>
+            </section>
+            <section class="panel activity-panel">
+              <div class="panel-head"><div><h2 class="panel-title">Recent activity</h2><div class="panel-subtitle">A quick pulse from your team</div></div><button class="view-all" id="activity-menu" aria-label="More activity options">···</button></div>
+              <div class="activity-list">
+                <div class="activity-item"><span class="activity-icon">✓</span><div class="activity-copy"><strong>Maria Chen</strong> checked in at Northstar Tech Summit<span class="activity-time">8 min ago · Check-in</span></div></div>
+                <div class="activity-item"><span class="activity-icon">+</span><div class="activity-copy"><strong>Sam Rivera</strong> was added to Harbor Food Week<span class="activity-time">24 min ago · Staffing</span></div></div>
+                <div class="activity-item"><span class="activity-icon">!</span><div class="activity-copy">Coverage gap flagged for <strong>City Lights Festival</strong><span class="activity-time">41 min ago · Alert</span></div></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <dialog id="event-modal">
+    <div class="modal-head"><div><h2>Create an event</h2><p>Add a new operation to the event roster.</p></div><button class="close-modal" type="button" aria-label="Close dialog">×</button></div>
+    <form class="form" id="event-form">
+      <label>Event name<input name="name" required placeholder="e.g. Summer Sound Festival"></label>
+      <label>Venue and city<input name="venue" required placeholder="e.g. Waterfront Park · Seattle"></label>
+      <div class="form-row"><label>Date<input name="date" type="date" required></label><label>Start time<input name="time" type="time" value="09:00" required></label></div>
+      <div class="form-row"><label>Staff required<input name="staff" type="number" min="1" value="20" required></label><label>Event type<select name="type"><option>Festival</option><option>Conference</option><option>Sporting event</option><option>Market</option><option>Other</option></select></label></div>
+      <div class="form-actions"><button class="secondary-button" type="button" id="cancel-modal">Cancel</button><button class="primary-button" type="submit"><span class="plus">+</span> Add to roster</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const eventModal = document.querySelector('#event-modal');
+    const eventForm = document.querySelector('#event-form');
+    const eventList = document.querySelector('#event-list');
+    const toast = document.querySelector('#toast');
+    const searchInput = document.querySelector('#search');
+    let activeFilter = 'all';
+    let toastTimer;
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    function updateCounts() {
+      const rows = [...eventList.querySelectorAll('.event-row')];
+      const attention = rows.filter(row => row.dataset.status === 'attention').length;
+      document.querySelector('#stat-events').textContent = String(rows.length + 3).padStart(2, '0');
+      document.querySelector('#stat-attention').textContent = String(attention).padStart(2, '0');
+      document.querySelector('#filter-count').textContent = String(attention).padStart(2, '0');
+      filterEvents();
+    }
+
+    function filterEvents() {
+      const query = searchInput.value.trim().toLowerCase();
+      let visible = 0;
+      eventList.querySelectorAll('.event-row').forEach(row => {
+        const matchesFilter = activeFilter === 'all' || row.dataset.status === activeFilter;
+        const matchesSearch = row.dataset.search.includes(query);
+        row.hidden = !(matchesFilter && matchesSearch);
+        if (!row.hidden) visible++;
+      });
+      document.querySelector('#empty-state').style.display = visible ? 'none' : 'block';
+    }
+
+    document.querySelector('#open-modal').addEventListener('click', () => eventModal.showModal());
+    document.querySelector('.close-modal').addEventListener('click', () => eventModal.close());
+    document.querySelector('#cancel-modal').addEventListener('click', () => eventModal.close());
+    eventModal.addEventListener('click', event => { if (event.target === eventModal) eventModal.close(); });
+    searchInput.addEventListener('input', filterEvents);
+
+    document.querySelectorAll('.filter').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.filter').forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+        activeFilter = button.dataset.filter;
+        filterEvents();
+      });
+    });
+
+    eventList.addEventListener('click', event => {
+      const button = event.target.closest('.deploy');
+      if (!button) return;
+      const row = button.closest('.event-row');
+      const status = row.querySelector('.status');
+      if (row.dataset.status === 'attention') {
+        row.dataset.status = 'active';
+        status.className = 'status';
+        status.textContent = 'Ready';
+        row.querySelector('.crew-col .row-value').firstChild.textContent = '40 / 40 ';
+        row.querySelector('.staff-bar').classList.remove('low');
+        row.querySelector('.staff-bar span').style.width = '100%';
+        button.textContent = 'Deployed';
+        updateCounts();
+        showToast('Team deployed. Coverage gap resolved.');
+      } else if (row.dataset.status === 'upcoming') {
+        row.dataset.status = 'active';
+        status.className = 'status';
+        status.textContent = 'Ready';
+        button.textContent = 'Deployed';
+        updateCounts();
+        showToast('Event team marked ready for deployment.');
+      } else {
+        showToast('This event team is already ready.');
+      }
+    });
+
+    eventForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const values = new FormData(eventForm);
+      const name = values.get('name').trim();
+      const venue = values.get('venue').trim();
+      const staff = Number(values.get('staff'));
+      const dateValue = new Date(`${values.get('date')}T${values.get('time')}`);
+      const dateLabel = dateValue.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const timeLabel = dateValue.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      const safeName = name.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+      const safeVenue = venue.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+      const row = document.createElement('article');
+      row.className = 'event-row';
+      row.dataset.status = 'upcoming';
+      row.dataset.search = `${name} ${venue} ${values.get('type')}`.toLowerCase();
+      row.innerHTML = `<div class="event-thumb"><img src="https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=120&q=80" alt="Event crowd"></div><div class="event-main"><div class="event-name">${safeName}</div><div class="event-meta">${safeVenue}</div></div><div class="date-col"><span class="row-label">Schedule</span><span class="row-value">${dateLabel} · ${timeLabel}</span></div><div class="crew-col"><span class="row-label">Crew</span><span class="row-value staff-value"><span>0 / ${staff}</span><span class="staff-bar low"><span style="width:0%"></span></span></span></div><span class="status planning">Planning</span><button class="deploy" type="button">Deploy</button>`;
+      eventList.prepend(row);
+      eventForm.reset();
+      eventModal.close();
+      document.querySelectorAll('.filter').forEach(item => item.classList.remove('active'));
+      document.querySelector('[data-filter="all"]').classList.add('active');
+      activeFilter = 'all';
+      searchInput.value = '';
+      updateCounts();
+      showToast(`${name} added to the event roster.`);
+    });
+
+    document.querySelectorAll('.nav button').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.nav button').forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+        document.querySelector('#crumb-page').textContent = button.dataset.page;
+        if (button.dataset.page !== 'Overview') showToast(`${button.dataset.page} workspace selected.`);
+      });
+    });
+    document.querySelectorAll('[data-nav]').forEach(button => button.addEventListener('click', () => {
+      document.querySelector('[data-page="Venues"]').click();
+    }));
+    document.querySelector('#view-all').addEventListener('click', () => {
+      document.querySelector('[data-filter="all"]').click();
+      searchInput.value = '';
+      filterEvents();
+    });
+    document.querySelector('#notifications').addEventListener('click', () => showToast('You are all caught up.'));
+    document.querySelector('#activity-menu').addEventListener('click', () => showToast('Showing the latest team updates.'));
+
+    const today = new Date();
+    document.querySelector('#today-date').textContent = today.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+  </script>
+</body>
+</html>
